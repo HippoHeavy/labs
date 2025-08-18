@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Personal Value Calculator</title>
+  <!-- Tailwind CSS CDN (no build step needed) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Tailwind config (optional tweaks)
+    tailwind.config = {
+      theme: {
+        extend: {
+          borderRadius: { '2xl': '1rem' }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    /* Light card shadow */
+    .card { box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-900">
+  <div class="mx-auto max-w-6xl p-4 sm:p-8 space-y-6">
+    <!-- Header -->
+    <header class="flex items-center justify-between gap-3">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight">Personal Value Calculator</h1>
+        <p class="text-slate-600 mt-1">Assess your adversarial value and see likely attack patterns.</p>
+      </div>
+      <div class="flex gap-2">
+        <button id="btn-reset" class="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition border bg-white hover:bg-slate-50">
+          <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+          Reset
+        </button>
+        <button id="btn-share" class="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition bg-black text-white hover:opacity-90">
+          <i data-lucide="share-2" class="w-4 h-4"></i>
+          Share
+        </button>
+      </div>
+    </header>
+
+    <!-- Score Card -->
+    <section class="card rounded-2xl border bg-white">
+      <div class="p-4 sm:p-5 pb-2">
+        <div class="flex items-center gap-3">
+          <h3 class="text-xl font-semibold">Your Score</h3>
+          <span id="tier-badge" class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border bg-slate-100 border-slate-200 text-slate-900">Low Value</span>
+        </div>
+      </div>
+      <div class="p-4 sm:p-5 pt-0">
+        <div class="flex items-end justify-between gap-4">
+          <div>
+            <div id="score-total" class="text-4xl font-bold leading-none">0</div>
+            <div id="score-sub" class="text-sm text-slate-600">out of 100 (0%)</div>
+          </div>
+          <div class="text-right max-w-xl">
+            <div class="text-sm font-medium">Adversary View</div>
+            <div id="adversary-view" class="text-sm text-slate-600">Opportunistic target; minimal ROI for tailored attack.</div>
+          </div>
+        </div>
+        <div class="mt-4">
+          <div class="h-3 w-full rounded-full bg-slate-200">
+            <div id="score-progress" class="h-3 rounded-full bg-black transition-all" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+      <div id="attack-badges" class="p-4 sm:p-5 pt-0 flex flex-wrap gap-2"></div>
+    </section>
+
+    <!-- Form -->
+    <section id="form-grid" class="grid gap-6 md:grid-cols-2"></section>
+
+    <!-- Summary -->
+    <section class="card rounded-2xl border bg-white">
+      <div class="p-4 sm:p-5">
+        <h3 class="text-base font-semibold">Summary</h3>
+      </div>
+      <div class="p-4 sm:p-5 pt-0 space-y-4">
+        <div id="summary-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <div class="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+          <div class="text-sm text-slate-600">
+            Share this page after you make selections to send your exact results.
+          </div>
+          <div class="flex gap-2">
+            <button id="btn-print" class="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition border bg-white hover:bg-slate-50">
+              <i data-lucide="copy" class="w-4 h-4"></i> Print / Save PDF
+            </button>
+            <button id="btn-share-2" class="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition bg-black text-white hover:opacity-90">
+              <i data-lucide="share-2" class="w-4 h-4"></i> Copy Share Link
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mapping Table -->
+    <section class="card rounded-2xl border bg-white">
+      <div class="p-4 sm:p-5">
+        <h3 class="text-base font-semibold">Score Interpretation & Attack Risk Mapping</h3>
+      </div>
+      <div class="p-4 sm:p-5 pt-0 overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left border-b">
+              <th class="py-2 pr-4">Score Range</th>
+              <th class="py-2 pr-4">Value Tier</th>
+              <th class="py-2 pr-4">Adversary View</th>
+              <th class="py-2">Likely Attack Types</th>
+            </tr>
+          </thead>
+          <tbody id="mapping-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="text-center text-xs text-slate-600 py-6">
+      This tool scores perceived adversarial value for awareness and prioritization only. Not a guarantee of risk.
+    </footer>
+  </div>
+
+<script>
+// ---------------- Data -----------------
+const CATEGORIES = [
+  {
+    key: "publicProfile",
+    title: "Public Profile",
+    max: 20,
+    description: "Social Media Followers (largest platform)",
+    options: [
+      { label: "< 10,000", points: 0, value: "lt10k" },
+      { label: "10,000 – 49,999", points: 4, value: "10k-49k" },
+      { label: "50,000 – 99,999", points: 8, value: "50k-99k" },
+      { label: "100,000 – 499,999", points: 12, value: "100k-499k" },
+      { label: "500,000 – 999,999", points: 16, value: "500k-999k" },
+      { label: "1,000,000+", points: 20, value: "1m+" },
+    ],
+  },
+  {
+    key: "influenceReach",
+    title: "Influence Reach",
+    max: 15,
+    description: "Decision-making power and public voice",
+    options: [
+      { label: "No leadership or advocacy role", points: 0, value: "none" },
+      { label: "Leads a small local group (under 100)", points: 3, value: "lead<100" },
+      { label: "Manages a team/org (100–999)", points: 6, value: "100-999" },
+      { label: "Direct influence over 1,000–9,999", points: 10, value: "1k-9k" },
+      { label: "Direct influence over 10,000+ or can sway major decisions in large orgs", points: 15, value: "10k+" },
+    ],
+  },
+  {
+    key: "financialLeverage",
+    title: "Financial Leverage",
+    max: 20,
+    description: "Direct access to funds/assets",
+    options: [
+      { label: "Personal funds only, <$50,000 liquid", points: 0, value: "<50k" },
+      { label: "Personal funds $50,000–$249,999 liquid", points: 5, value: "50k-249k" },
+      { label: "Controls or manages <$1M in org/project funds", points: 10, value: "<1m" },
+      { label: "Controls $1M–$10M", points: 15, value: "1m-10m" },
+      { label: "Controls $10M+", points: 20, value: ">10m" },
+    ],
+  },
+  {
+    key: "techAssets",
+    title: "Technical/Physical Assets",
+    max: 20,
+    description: "Access to high-value equipment or systems",
+    options: [
+      { label: "No specialized equipment", points: 0, value: "none" },
+      { label: "Owns/operates high-end consumer devices only", points: 5, value: "consumer" },
+      { label: "Access to specialized tools (industrial/research)", points: 10, value: "specialized" },
+      { label: "Access to SCADA/ICS or operational tech in critical infra", points: 15, value: "ics-access" },
+      { label: "Sole control over SCADA/ICS in high-value environments", points: 20, value: "ics-control" },
+    ],
+  },
+  {
+    key: "networkValue",
+    title: "Network Value",
+    max: 15,
+    description: "Access to high-value people or organizations",
+    options: [
+      { label: "No significant connections", points: 0, value: "none" },
+      { label: "Know several mid-level professionals in relevant industries", points: 5, value: "mid-pros" },
+      { label: "Direct connection to executives, public figures, or critical specialists", points: 10, value: "execs" },
+      { label: "Trusted relationships with multiple high-value individuals across industries", points: 15, value: "multi-high" },
+    ],
+  },
+  {
+    key: "operationalCriticality",
+    title: "Operational Criticality",
+    max: 10,
+    description: "How vital you are to an operation or organization",
+    options: [
+      { label: "Easily replaced / non-critical role", points: 0, value: "non-critical" },
+      { label: "Some specialized skills but not business-critical", points: 3, value: "some" },
+      { label: "One of a few people with essential skills/access", points: 6, value: "few" },
+      { label: "Sole person for certain tasks/decisions", points: 10, value: "sole" },
+    ],
+  },
+];
+
+const MAX_TOTAL = CATEGORIES.reduce((sum, c) => sum + c.max, 0);
+
+const TIER_MAP = [
+  {
+    range: [0, 25],
+    name: "Low Value",
+    view: "Opportunistic target; minimal ROI for tailored attack.",
+    attacks: [
+      "Mass phishing",
+      "Credential stuffing from breached lists",
+      "Malvertising",
+      "Low-level malware / adware",
+    ],
+  },
+  {
+    range: [26, 50],
+    name: "Moderate Value",
+    view: "Worth targeting if attack surface is low-cost to exploit.",
+    attacks: [
+      "Phishing and spear phishing",
+      "Business Email Compromise (BEC) attempts",
+      "Cryptojacking (using devices for crypto mining)",
+      "Account takeovers for resale or lateral movement",
+    ],
+  },
+  {
+    range: [51, 75],
+    name: "High Value",
+    view: "Clear ROI for targeted campaigns; possible persistent interest.",
+    attacks: [
+      "Tailored spear phishing",
+      "Ransomware targeting",
+      "Social engineering via professional and personal networks",
+      "Supply chain compromise",
+      "Exploitation of specialized equipment or data",
+    ],
+  },
+  {
+    range: [76, 100],
+    name: "Prime Target",
+    view: "Strategic asset; high likelihood of sustained, multi-vector attacks.",
+    attacks: [
+      "Advanced Persistent Threat (APT) operations",
+      "Multi-stage ransomware campaigns",
+      "ICS/SCADA exploitation",
+      "Disinformation or reputational attacks",
+      "Direct compromise of high-value networks and individuals",
+    ],
+  },
+];
+
+// ---------------- Helpers -----------------
+function $(sel) { return document.querySelector(sel); }
+function el(tag, opts={}) { const e = document.createElement(tag); Object.assign(e, opts); return e; }
+
+function encodeSelections(selections) {
+  const params = new URLSearchParams();
+  Object.entries(selections).forEach(([k,v]) => { if (v) params.set(k, v); });
+  return params.toString();
+}
+function decodeSelections(qs) {
+  const params = new URLSearchParams(qs);
+  const out = {};
+  CATEGORIES.forEach(c => {
+    const v = params.get(c.key);
+    if (v) out[c.key] = v;
+  });
+  return out;
+}
+
+function tierForScore(score) {
+  return TIER_MAP.find(t => score >= t.range[0] && score <= t.range[1]) || TIER_MAP[0];
+}
+
+function copyToClipboard(text) {
+  return navigator.clipboard?.writeText(text);
+}
+
+// ---------------- Render -----------------
+const selections = {}; // key -> option.value
+
+function buildForm() {
+  const grid = $("#form-grid");
+  grid.innerHTML = "";
+
+  CATEGORIES.forEach(cat => {
+    const card = el("section", { className: "card rounded-2xl border bg-white" });
+
+    const header = el("div", { className: "p-4 sm:p-5" });
+    const title = el("h3", { className: "text-base font-semibold" });
+    title.innerHTML = `${cat.title} <span class="text-slate-600 font-normal">(Max: ${cat.max} pts)</span>`;
+    header.appendChild(title);
+    card.appendChild(header);
+
+    const content = el("div", { className: "p-4 sm:p-5 pt-0 space-y-3" });
+    if (cat.description) {
+      const desc = el("p", { className: "text-sm text-slate-600 -mt-2", textContent: cat.description });
+      content.appendChild(desc);
+    }
+
+    const fieldset = el("fieldset", { className: "space-y-2" });
+    cat.options.forEach(opt => {
+      const id = `${cat.key}-${opt.value}`;
+
+      const label = el("label", {
+        htmlFor: id,
+        className: "flex items-start gap-3 rounded-xl border p-3 cursor-pointer transition hover:bg-slate-50",
+      });
+
+      const input = el("input", {
+        id, type: "radio", name: cat.key, className: "mt-1",
+        checked: selections[cat.key] === opt.value ? true : false
+      });
+
+      input.addEventListener("change", () => {
+        selections[cat.key] = opt.value;
+        updateState();
+      });
+
+      const textWrap = el("div", { className: "flex-1" });
+      const main = el("div", { className: "font-medium leading-tight", textContent: opt.label });
+      const sub = el("div", { className: "text-xs text-slate-600", textContent: `${opt.points} pts` });
+      textWrap.appendChild(main);
+      textWrap.appendChild(sub);
+
+      label.appendChild(input);
+      label.appendChild(textWrap);
+      fieldset.appendChild(label);
+    });
+
+    content.appendChild(fieldset);
+    card.appendChild(content);
+    grid.appendChild(card);
+  });
+}
+
+function buildSummary() {
+  const grid = $("#summary-grid");
+  grid.innerHTML = "";
+  CATEGORIES.forEach(cat => {
+    const wrap = el("div", { className: "rounded-xl border p-3" });
+    const title = el("div", { className: "text-sm text-slate-600", textContent: cat.title });
+    const val = selections[cat.key];
+    const opt = cat.options.find(o => o.value === val);
+    const label = el("div", { className: "font-medium", textContent: opt ? opt.label : "—" });
+    const pts = el("div", { className: "text-xs text-slate-600", textContent: `${opt ? opt.points : 0} / ${cat.max} pts` });
+    wrap.appendChild(title);
+    wrap.appendChild(label);
+    wrap.appendChild(pts);
+    grid.appendChild(wrap);
+  });
+}
+
+function buildMappingTable() {
+  const tbody = $("#mapping-body");
+  tbody.innerHTML = "";
+  TIER_MAP.forEach(t => {
+    const tr = el("tr", { className: "border-b align-top" });
+    const tdA = el("td", { className: "py-3 pr-4", textContent: `${t.range[0]}–${t.range[1]} pts` });
+    const tdB = el("td", { className: "py-3 pr-4" });
+    const badge = el("span", { className: "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border bg-white border-slate-200 text-slate-700", textContent: t.name });
+    tdB.appendChild(badge);
+    const tdC = el("td", { className: "py-3 pr-4 max-w-xl", textContent: t.view });
+    const tdD = el("td", { className: "py-3" });
+    const ul = el("ul", { className: "list-disc ml-5 space-y-1" });
+    t.attacks.forEach(a => ul.appendChild(el("li", { textContent: a })));
+    tdD.appendChild(ul);
+    tr.appendChild(tdA); tr.appendChild(tdB); tr.appendChild(tdC); tr.appendChild(tdD);
+    tbody.appendChild(tr);
+  });
+}
+
+function computeTotal() {
+  return CATEGORIES.reduce((sum, cat) => {
+    const val = selections[cat.key];
+    const opt = cat.options.find(o => o.value === val);
+    return sum + (opt ? opt.points : 0);
+  }, 0);
+}
+
+function updateURL() {
+  const qs = encodeSelections(selections);
+  const url = qs ? `${location.pathname}?${qs}` : location.pathname;
+  history.replaceState(null, "", url);
+}
+
+function updateState() {
+  // highlight selected radio wrappers
+  document.querySelectorAll("fieldset label").forEach(label => {
+    const input = label.querySelector("input[type=radio]");
+    const catKey = input?.name;
+    const val = input?.id?.replace(`${catKey}-`, "");
+    const isChecked = selections[catKey] === val;
+    label.classList.toggle("ring-2", isChecked);
+    label.classList.toggle("ring-black/20", isChecked);
+    label.classList.toggle("border-black", isChecked);
+  });
+
+  const total = computeTotal();
+  const percent = Math.round((total / MAX_TOTAL) * 100);
+  const tier = tierForScore(total);
+
+  $("#score-total").textContent = total;
+  $("#score-sub").textContent = `out of ${MAX_TOTAL} (${percent}%)`;
+  $("#adversary-view").textContent = tier.view;
+  $("#score-progress").style.width = percent + "%";
+
+  const badge = $("#tier-badge");
+  badge.textContent = tier.name;
+  badge.className = "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border " +
+    (tier.name === "Prime Target" ? "bg-red-600 border-red-700 text-white" : "bg-slate-100 border-slate-200 text-slate-900");
+
+  const attackWrap = $("#attack-badges");
+  attackWrap.innerHTML = "";
+  tier.attacks.forEach(a => {
+    const b = el("span", { className: "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border bg-white border-slate-200 text-slate-700 whitespace-normal text-left" });
+    b.textContent = a;
+    attackWrap.appendChild(b);
+  });
+
+  buildSummary();
+  updateURL();
+}
+
+// ---------------- Init -----------------
+function initFromQuery() {
+  const decoded = decodeSelections(location.search.replace(/^\\?/, ""));
+  Object.assign(selections, decoded);
+}
+
+function setupButtons() {
+  $("#btn-reset").addEventListener("click", () => {
+    Object.keys(selections).forEach(k => delete selections[k]);
+    document.querySelectorAll("input[type=radio]").forEach(r => r.checked = false);
+    updateState();
+  });
+
+  const share = async () => {
+    try {
+      await copyToClipboard(location.href);
+      const btns = [$("#btn-share"), $("#btn-share-2")];
+      btns.forEach(b => {
+        if (!b) return;
+        b.classList.add("opacity-80");
+        b.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Copied';
+      });
+      lucide.createIcons();
+      setTimeout(() => {
+        if ($("#btn-share")) { $("#btn-share").innerHTML = '<i data-lucide="share-2" class="w-4 h-4"></i> Share'; lucide.createIcons(); }
+        if ($("#btn-share-2")) { $("#btn-share-2").innerHTML = '<i data-lucide="share-2" class="w-4 h-4"></i> Copy Share Link'; lucide.createIcons(); }
+      }, 1500);
+    } catch (e) { console.error(e); }
+  };
+
+  $("#btn-share")?.addEventListener("click", share);
+  $("#btn-share-2")?.addEventListener("click", share);
+  $("#btn-print")?.addEventListener("click", () => window.print());
+}
+
+function main() {
+  buildForm();
+  buildMappingTable();
+  initFromQuery();
+  // Pre-select any radios that match query params
+  CATEGORIES.forEach(cat => {
+    const v = selections[cat.key];
+    if (!v) return;
+    const input = document.getElementById(`${cat.key}-${v}`);
+    if (input) input.checked = true;
+  });
+  updateState();
+  setupButtons();
+  lucide.createIcons();
+}
+
+document.addEventListener("DOMContentLoaded", main);
+</script>
+</body>
+</html>
