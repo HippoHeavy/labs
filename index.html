@@ -3,519 +3,199 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Personal Value Calculator — Prime Radiant (Wizard)</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          borderRadius: { '2xl': '1rem' }
-        }
-      }
-    }
-  </script>
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <title>2025 Cybercrime Cost Counter • Prime Radiant</title>
+  <meta name="description" content="A real‑time counter estimating cybercrime costs for 2025, reaching $10.5T by year end." />
   <style>
+    /* ===== Prime Radiant brand palette ===== */
     :root {
-      --pr-ink: #39415C;
-      --pr-gold: #E0A800;
-      --pr-yellow: #F9CF2A;
-      --pr-porcelain: #FAFBF6;
-      --pr-amber: #A57C00;
-      --pr-purple: #8F6CC2;
-      --pr-lilac: #DDC2FF;
-      --pr-shell: #F9F6FB;
+      --brand-navy:   #39415C; /* primary deep */
+      --brand-gold:   #E0A800; /* primary accent */
+      --brand-gold-2: #F9CF2A; /* bright accent */
+      --brand-ivory:  #FAFBF6; /* light surface */
+      --brand-amber:  #A57C00; /* dark gold */
+      --brand-purple: #8F6CC2; /* secondary */
+      --brand-lav:    #DDC2FF; /* soft secondary */
+      --brand-ivory2: #F9F6FB; /* extra light */
+
+      /* UI tokens derived from brand */
+      --bg1: #0f172a;            /* deep base */
+      --bg2: var(--brand-navy);  /* brand tint */
+      --fg:  #e5e7eb;            /* light text */
+      --muted:#b6becc;           /* muted text tuned toward brand */
+      --glass: rgba(255,255,255,0.06);
+      --bar-grad: linear-gradient(90deg, var(--brand-gold), var(--brand-gold-2), var(--brand-purple));
     }
-    body { color: var(--pr-ink); }
-    .brand-gradient { background-image: linear-gradient(to bottom, var(--pr-porcelain), white); }
-    .brand-card { box-shadow: 0 1px 2px rgba(0,0,0,.05); }
-    .brand-primary { background-color: var(--pr-ink); color: white; }
-    .brand-primary:hover { filter: brightness(.95); }
-    .brand-accent { background-color: var(--pr-gold); color: #222; }
-    .brand-accent:hover { filter: brightness(.95); }
-    .muted { color: #5B637E; }
-    .badge { border: 1px solid rgba(0,0,0,.1); background: white; color: #334; }
-    .card-selected { border-color: var(--pr-ink) !important; box-shadow: 0 0 0 2px color-mix(in oklab, var(--pr-ink) 25%, transparent); }
-    .touch-target label { padding: .9rem; }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(1200px 600px at 70% 20%, rgba(249,207,42,0.06) 0%, transparent 60%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      color: var(--fg);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial;
+      display: grid; place-items: center;
+    }
+    .wrap { width: min(1100px, 92vw); padding: 2rem 1.25rem 3rem; }
+
+    /* Header with centered branding */
+    header { display: grid; gap: .75rem; place-items: center; margin-bottom: 1.25rem; text-align:center; }
+    .branding { display:flex; align-items:center; justify-content:center; }
+    .branding img { height:60px; width:auto; filter: drop-shadow(0 2px 6px rgba(0,0,0,.35)); }
+    h1 { font-size: clamp(1.4rem, 2.2vw, 2rem); font-weight: 700; letter-spacing: 0.2px; margin: 0; }
+    .badge { border: 1px solid rgba(255,255,255,0.12); background: var(--glass); padding: 0.35rem 0.6rem; border-radius: 999px; font-size: 0.8rem; color: var(--muted); backdrop-filter: blur(6px); }
+
+    .panel { background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)); border: 1px solid rgba(255,255,255,0.12); border-radius: 18px; padding: clamp(1rem, 4vw, 2rem); box-shadow: 0 10px 30px rgba(0,0,0,0.24), inset 0 0 0 1px rgba(255,255,255,0.03); }
+    .counter { display: grid; gap: 0.5rem; align-items: start; justify-items: center; text-align: center; }
+
+    .big { font-variant-numeric: tabular-nums lining-nums; font-feature-settings: "tnum" 1, "lnum" 1; font-weight: 800; font-size: clamp(2rem, 7vw, 5rem); line-height: 1.05; letter-spacing: 0.5px; margin: 0.25rem 0 0.5rem; text-shadow: 0 2px 12px rgba(0,0,0,0.35); }
+    .subtitle { color: var(--muted); font-size: clamp(0.95rem, 1.6vw, 1.05rem); }
+
+    .progress { width: 100%; height: 10px; border-radius: 999px; background: rgba(255,255,255,0.07); overflow: hidden; margin-top: 0.75rem; border: 1px solid rgba(255,255,255,0.12); }
+    .bar { height: 100%; width: 0%; background: var(--bar-grad); transition: width 0.8s cubic-bezier(.2,.7,.2,1); box-shadow: 0 0 16px rgba(224,168,0,0.30); }
+
+    .row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; align-items: center; justify-content: center; }
+    .row .chip { font-size: 0.9rem; color: var(--muted); }
+
+    footer { margin-top: 1.25rem; color: var(--muted); font-size: 0.85rem; text-align: center; }
+    a { color: var(--brand-lav); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Toasts (with brand accents) */
+    .toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:10px;z-index:50;max-width:min(92vw,420px)}
+    .toast{display:grid;grid-template-columns:auto 1fr auto;align-items:start;gap:.6rem;padding:.8rem 1rem;border-radius:14px;background:rgba(17,24,39,.82);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(8px);box-shadow:0 10px 20px rgba(0,0,0,.35);transform:translateY(12px);opacity:0;animation:toast-in .45s cubic-bezier(.2,.7,.2,1) forwards}
+    .toast .title{font-weight:700}
+    .toast .meta{color:var(--muted);font-size:.85rem}
+    .toast .amt{font-weight:800;color:var(--brand-gold-2)}
+    .toast.warn{border-color: rgba(224,168,0,.45)}
+    .toast.bad{ border-color: rgba(143,108,194,.45)}
+    @keyframes toast-in{to{transform:translateY(0);opacity:1}}
+    @keyframes toast-out{to{transform:translateY(12px);opacity:0}}
+    .toast-row{display:flex;align-items:center;gap:.5rem}
+
+    .controls{position:fixed;right:16px;bottom:16px;transform:translateY(72px);display:flex;align-items:center;gap:.6rem;color:var(--muted);font-size:.9rem;user-select:none}
+    .switch{width:44px;height:26px;border-radius:999px;background:rgba(255,255,255,.12);position:relative;cursor:pointer;border:1px solid rgba(255,255,255,.18)}
+    .switch::after{content:"";position:absolute;width:20px;height:20px;border-radius:50%;top:50%;left:3px;transform:translateY(-50%);background:#fff;transition:all .2s ease}
+    .switch.on{background:#e0a8002e;border-color:#e0a80066}
+    .switch.on::after{left:21px}
   </style>
 </head>
-<body class="min-h-screen brand-gradient">
-  <div class="mx-auto max-w-2xl sm:max-w-3xl p-4 sm:p-6 md:p-8 space-y-6">
-    <header class="flex items-center justify-center">
-      <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDEyNSIgaGVpZ2h0PSI2NzQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHhtbDpzcGFjZT0icHJlc2VydmUiIG92ZXJmbG93PSJoaWRkZW4iPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0xMjggMTY4MikiPjxnPjxwYXRoIGQ9Ik05OTItMTUxNyAxMTQ3LjM5LTE1MTdDMTIyMC4wNC0xNTE3IDEyNzItMTQ3My4yNCAxMjcyLTEzOTguMyAxMjcyLTEzMjIuODUgMTIyMC4wNC0xMjgwLjA5IDExNDcuMzktMTI4MC4wOUwxMDY3LjY4LTEyODAuMDkgMTA2Ny42OC0xMTgwIDk5Mi0xMTgwIDk5Mi0xNTE3Wk0xMDY3LjY4LTE0NDkuMSAxMDY3LjY4LTEzNDcuNDkgMTE1MC40MS0xMzQ3LjQ5QzExODUuMjMtMTM0Ny40OSAxMTk2LjgzLTEzNTguMDYgMTE5Ni44My0xMzk4LjMgMTE5Ni44My0xNDM5LjA0IDExODUuMjMtMTQ0OS4xIDExNTAuNDEtMTQ0OS4xTDEwNjcuNjgtMTQ0OS4xWiIgZmlsbD0iIzNBNDE1QyIgZmlsbC1ydWxlPSJldmVub2RkIiBmaWxsLW9wYWNpdHk9IjEiLz48cGF0aCBkPSJNMTU0OS0xNTE3IDE2MjQtMTUxNyAxNjI0LTE0NjIgMTU1MC4wMS0xNDYyIDE1NDktMTUxN1oiIGZpbGw9IiMzQTQxNUMiIGZpbGwtcnVsZT0iZXZlbm9kZCIgZmlsbC1vcGFjaXR5PSIxIi8+PHBhdGggZD0iTTI1MDUtMTUxNyAyNjU5Ljc5LTE1MTdDMjc0MC4yLTE1MTcgMjc4NC45My0xNDc5Ljc4IDI3ODQuOTMtMTQxNC4zOSAyNzg0LjkzLTEzNTkuNTcgMjc1Ny43OS0xMzI2Ljg3IDI3MDAtMTMyMS44NEwyNzAwLTEzMTYuODFDMjcyOS4xNC0xMzA3Ljc2IDI3NDMuMjItMTI5MC4xNSAyNzU2LjI4LTEyNjQuNUwyNzk5LTExODAgMjcxMS4wNS0xMTgwIDI2NzEuMzUtMTI1Ny45NkMyNjU2LjI3LTEyODcuMTQgMjY0Ni4yMi0xMjk5LjcxIDI2MTAuNTQtMTI5OS43MUwyNTgwLjM4LTEyOTkuNzEgMjU4MC4zOC0xMTgwIDI1MDUtMTE4MCAyNTA1LTE1MTdaTTI1ODAuMzgtMTQ0OS4xIDI1ODAuMzgtMTM2Mi4wOCAyNjYzLjMxLTEzNjIuMDhDMjY5OC40OS0xMzYyLjA4IDI3MTAuMDUtMTM3Mi42NCAyNzEwLjA1LTE0MDUuODQgMjcxMC4wNS0xNDM4LjAzIDI2OTguNDktMTQ0OS4xIDI2NjMuMzEtMTQ0OS4xTDI1ODAuMzgtMTQ0OS4xWiIgZmlsbD0iIzNBNDE1QyIgZmlsbC1ydWxlPSJldmVub2RkIiBmaWxsLW9wYWNpdHk9IjEiLz48cGF0aCBkPSJNMzI3Ni43OC0xNTE3IDMzNTItMTUxNyAzMzUyLTExODAuMDMgMzI4MS44My0xMTgwLjAzIDMyODEuODMtMTIxNy4yNSAzMjc5LjMxLTEyMTcuMjVDMzI2Ni4xOC0xMTkwLjA5IDMyMzcuNDEtMTE3NSAzMjAwLjA1LTExNzUgMzEyOC4zNy0xMTc1IDMwOTAtMTIyNi44IDMwOTAtMTMwNi4yNyAzMDkwLTEzODYuMjQgMzEzMC44OS0xNDM4LjA0IDMyMDAuMDUtMTQzOC4wNCAzMjM4LjkyLTE0MzguMDQgMzI2Mi4xNC0xNDIwLjk0IDMyNzMuNzUtMTM5OS44MUwzMjc2Ljc4LTEzOTkuODEgMzI3Ni43OC0xNTE3Wk0zMjIxLjI1LTEzNzMuNjZDMzE3Ny4zMy0xMzczLjY2IDMxNjUuMjItMTM1Mi41NCAzMTY1LjIyLTEzMDYuMjcgMzE2NS4yMi0xMjYwLjUgMzE3Ny4zMy0xMjM5LjM4IDMyMjEuMjUtMTIzOS4zOCAzMjU3LjA5LTEyMzkuMzggMzI3Ni43OC0xMjUxLjk1IDMyNzYuNzgtMTI4Ni4xNUwzMjc2Ljc4LTEzMjYuODlDMzI3Ni43OC0xMzYxLjA5IDMyNTcuMDktMTM3My42NiAzMjIxLjI1LTEzNzMuNjZaIiBmaWxsPSIjM0E0MTVDIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGZpbGwtb3BhY2l0eT0iMSIvPjxwYXRoIGQ9Ik0zMzk0LTE1MTcgMzQ2OS0xNTE3IDM0NjktMTQ2MiAzMzk1LjAxLTE0NjIgMzM5NC0xNTE3WiIgZmlsbD0iIzNBNDE1QyIgZmlsbC1ydWxlPSJldmVub2RkIiBmaWxsLW9wYWNpdHk9IjEiLz48cGF0aCBkPSJNNDExNy42LTE0OTIgNDE3Ny4yNC0xNDkyIDQxNzcuMjQtMTQzMy4xMiA0MjQ5LTE0MzMuMTIgNDI0OS0xMzcwLjcyIDQxNzcuMjQtMTM3MC43MiA0MTc3LjI0LTEyNzEuNTlDNDE3Ny4yNC0xMjQ5LjQ1IDQxODQuODItMTI0Ni45MyA0MjE3LjY3LTEyNDYuOTNMNDI0OS0xMjQ2LjkzIDQyNDktMTE4NC4wM0M0MjM2Ljg3LTExODEuNTIgNDIxNy4xNi0xMTc5IDQxOTkuNDctMTE3OSA0MTMzLjI3LTExNzkgNDEwMS40My0xMjAzLjE1IDQxMDEuNDMtMTI2My4wNEw0MTAxLjQzLTEzNzAuNzIgNDA2MS0xMzcwLjcyIDQwNjEtMTQzMy4xMiA0MTAzLjQ1LTE0MzMuMTIgNDExNy42LTE0OTJaIiBmaWxsPSIjM0E0MTVDIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGZpbGwtb3BhY2l0eT0iMSIvPjxwYXRoIGQ9Ik0xNDQ3LjY3LTE0MzhDMTUwMC40MS0xNDM4IDE1MjAtMTM5OC43NyAxNTIwLTEzNDcuOThMMTUyMC0xMzI0Ljg0IDE0NDUuMTUtMTMyNC44NCAxNDQ1LjE1LTEzMzguNDJDMTQ0NS4xNS0xMzY1LjU4IDE0MzYuNjEtMTM3NC4xMyAxNDEzLTEzNzQuMTMgMTM4OS45LTEzNzQuMTMgMTM3OC44NS0xMzY2LjA4IDEzNzguODUtMTMzOC40MkwxMzc4Ljg1LTExODAgMTMwNC0xMTgwIDEzMDQtMTQzMi45NyAxMzczLjgyLTE0MzIuOTcgMTM3My44Mi0xMzkyLjIzIDEzNzYuODQtMTM5Mi4yM0MxMzg5LjQtMTQxNy44OCAxNDEyLTE0MzggMTQ0Ny42Ny0xNDM4WiIgZmlsbD0iIzNBNDE1QyIgZmlsbC1ydWxlPSJldmVub2RkIiBmaWxsLW9wYWNpdHk9IjEiLz48cGF0aCBkPSJNMTgyNC4xMi0xNDM4QzE4NjcuNDMtMTQzOCAxODkzLjYyLTE0MTguMzkgMTkwNi4yMS0xMzg4LjcxTDE5MDguNzItMTM4OC43MUMxOTIyLjgyLTE0MTYuMzcgMTk0OC4wMS0xNDM4IDE5OTQuODQtMTQzOCAyMDYwLjMxLTE0MzggMjA4Ny0xMzk0LjI1IDIwODctMTM0MC40M0wyMDg3LTExODAgMjAxMS40Ni0xMTgwIDIwMTEuNDYtMTMyNS4zNEMyMDExLjQ2LTEzNjAuNTUgMjAwMC44OC0xMzczLjEyIDE5NjQuMTItMTM3My4xMiAxOTI5Ljg4LTEzNzMuMTIgMTkxNS4yNy0xMzYyLjA2IDE5MTUuMjctMTMyNS4zNEwxOTE1LjI3LTExODAgMTgzOS43My0xMTgwIDE4MzkuNzMtMTMyNS4zNEMxODM5LjczLTEzNjAuNTUgMTgyOC42NS0xMzczLjEyIDE3OTIuMzktMTM3My4xMiAxNzU4LjE1LTEzNzMuMTIgMTc0My4wNC0xMzYyLjA2IDE3NDMuMDQtMTMyNi4zNUwxNzQzLjA0LTExODAgMTY2OC0xMTgwIDE2NjgtMTQzMi45NyAxNzM4LTE0MzIuOTcgMTczOC0xMzg4LjcxIDE3NDEuMDItMTM4OC43MUMxNzU0LjYyLTE0MTcuMzggMTc4MC44MS0xNDM4IDE4MjQuMTItMTQzOFoiIGZpbGw9IiMzQTQxNUMiIGZpbGwtcnVsZT0iZXZlbm9kZCIgZmlsbC1vcGFjaXR5PSIxIi8+PHBhdGggZD0iTTIyNTAuMjctMTQzOEMyMzI2LjIzLTE0MzggMjM3MS0xMzkyLjc0IDIzNzEtMTMyNi44NyAyMzcxLTEzMTIuNzkgMjM2OC45OS0xMjk4LjIgMjM2Ny40OC0xMjg5LjY1TDIxOTMuOTMtMTI4OS42NUMyMTk1LjQ0LTEyNTQuNDUgMjIwOS41Mi0xMjQwLjM3IDIyNTAuNzctMTI0MC4zNyAyMjgwLjk2LTEyNDAuMzcgMjI5NC4wMy0xMjQ2LjkxIDIyOTQuMDMtMTI2Mi41TDIyOTQuMDMtMTI2NS41MiAyMzY4LjQ4LTEyNjUuNTIgMjM2OC40OC0xMjYwLjQ5QzIzNjguNDgtMTIwNi42OCAyMzIyLjItMTE3NSAyMjQ5Ljc3LTExNzUgMjE2Mi43NC0xMTc1IDIxMjMtMTIyNS43OSAyMTIzLTEzMDUuNzUgMjEyMy0xMzg2LjcxIDIxNzEuMjktMTQzOCAyMjUwLjI3LTE0MzhaTTIyNDcuNzUtMTM3Ni4xNUMyMjExLjU0LTEzNzYuMTUgMjE5Ny40NS0xMzYyLjA3IDIxOTQuNDMtMTMzNS40MUwyMjk4LjU2LTEzMzUuNDFDMjMwMC4wNy0xMzYxLjU2IDIyODIuOTctMTM3Ni4xNSAyMjQ3Ljc1LTEzNzYuMTVaIiBmaWxsPSIjM0E0MTVDIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGZpbGwtb3BhY2l0eT0iMSIvPjxwYXRoIGQ9Ik0yOTQyLjA1LTE0MzhDMzAxNi42Ny0xNDM4IDMwNTYtMTM5Ny4yNyAzMDU2LTEzMjkuODhMMzA1Ni0xMTgwLjAzIDI5ODUuOTEtMTE4MC4wMyAyOTg1LjkxLTEyMTQuMjIgMjk4Mi44OS0xMjE0LjIyQzI5NjkuMjctMTE5NS42MiAyOTQzLjU2LTExNzUgMjg5Ni42Ny0xMTc1IDI4NTEuNzktMTE3NSAyODE3LTExOTguNjMgMjgxNy0xMjQ0LjQgMjgxNy0xMjgzLjYyIDI4NDUuMjQtMTMwNy43NiAyODk3LjY4LTEzMTUuOEwyOTg0LjQtMTMyOC44OCAyOTg0LjQtMTMzNi45MkMyOTg0LjQtMTM2Ni41OSAyOTY4LjI3LTEzNzIuMTIgMjkzOC41Mi0xMzcyLjEyIDI5MDcuNzYtMTM3Mi4xMiAyODk1LjY2LTEzNjMuNTggMjg5NS42Ni0xMzM3LjkzTDI4OTUuNjYtMTMzMi40IDI4MjMuNTUtMTMzMi40IDI4MjMuNTUtMTMzNy45M0MyODIzLjU1LTEzOTguMjcgMjg3MC40NS0xNDM4IDI5NDIuMDUtMTQzOFpNMjk4NC40LTEyNzkuNiAyOTExLjc5LTEyNjguNTNDMjg5Ni4xNi0xMjY2LjAyIDI4ODkuMS0xMjYwLjk5IDI4ODkuMS0xMjUwLjQzIDI4ODkuMS0xMjM2Ljg1IDI4OTkuNjktMTIzMi4zMyAyOTIxLjg4LTEyMzIuMzMgMjk1Mi42NC0xMjMyLjMzIDI5ODQuNC0xMjQwLjM3IDI5ODQuNC0xMjc5LjZaIiBmaWxsPSIjM0E0MTVDIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGZpbGwtb3BhY2l0eT0iMSIvPjxwYXRoIGQ9Ik0zNjI5LjA1LTE0MzhDMzcwMy42Ny0xNDM4IDM3NDMtMTM5Ny4yNyAzNzQzLTEzMjkuODhMMzc0My0xMTgwLjAzIDM2NzIuOTEtMTE4MC4wMyAzNjcyLjkxLTEyMTQuMjIgMzY2OS44OS0xMjE0LjIyQzM2NTYuMjctMTE5NS42MiAzNjMwLjU2LTExNzUgMzU4My42Ny0xMTc1IDM1MzguNzktMTE3NSAzNTA0LTExOTguNjMgMzUwNC0xMjQ0LjQgMzUwNC0xMjgzLjYyIDM1MzIuMjQtMTMwNy43NiAzNTg0LjY3LTEzMTUuOEwzNjcxLjQtMTMyOC44OCAzNjcxLjQtMTMzNi45MkMzNjcxLjQtMTM2Ni41OSAzNjU1LjI3LTEzNzIuMTIgMzYyNS41Mi0xMzcyLjEyIDM1OTQuNzYtMTM3Mi4xMiAzNTgyLjY2LTEzNjMuNTggMzU4Mi42Ni0xMzM3LjkzTDM1ODIuNjYtMTMzMi40IDM1MTAuNTUtMTMzMi40IDM1MTAuNTUtMTMzNy45M0MzNTEwLjU1LTEzOTguMjcgMzU1Ny40NS0xNDM4IDM2MjkuMDUtMTQzOFpNMzY3MS40LTEyNzkuNiAzNTk4Ljc5LTEyNjguNTNDMzU4My4xNi0xMjY2LjAyIDM1NzYuMS0xMjYwLjk5IDM1NzYuMS0xMjUwLjQzIDM1NzYuMS0xMjM2Ljg1IDM1ODYuNjktMTIzMi4zMyAzNjA4Ljg4LTEyMzIuMzMgMzYzOS42NC0xMjMyLjMzIDM2NzEuNC0xMjQwLjM3IDM2NzEuNC0xMjc5LjZaIiBmaWxsPSIjM0E0MTVDIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGZpbGwtb3BhY2l0eT0iMSIvPjxwYXRoIGQ9Ik0zOTQ0LjU3LTE0MzhDNDAxMC43Mi0xNDM4IDQwMzktMTM5NC4yNSA0MDM5LTEzNDAuNDNMNDAzOS0xMTgwIDM5NjMuMjUtMTE4MCAzOTYzLjI1LTEzMjUuMzRDMzk2My4yNS0xMzYwLjU1IDM5NTEuNjQtMTM3My4xMiAzOTEzLjI2LTEzNzMuMTIgMzg3Ni45LTEzNzMuMTIgMzg2MS4yNC0xMzYxLjU2IDM4NjEuMjQtMTMyMy4zM0wzODYxLjI0LTExODAgMzc4Ni0xMTgwIDM3ODYtMTQzMi45NyAzODU2LjE5LTE0MzIuOTcgMzg1Ni4xOS0xMzg4LjcxIDM4NTkuMjItMTM4OC43MUMzODcyLjg2LTE0MTcuMzggMzkwMC4xMy0xNDM4IDM5NDQuNTctMTQzOFoiIGZpbGw9IiMzQTQxNUMiIGZpbGwtcnVsZT0iZXZlbm9kZCIgZmlsbC1vcGFjaXR5PSIxIi8+PHBhdGggZD0iTTE1NTAtMTQzMyAxNjI1LTE0MzMgMTYyNS0xMTgwIDE1NTAtMTE4MCAxNTUwLTE0MzNaIiBmaWxsPSIjM0E0MTVDIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGZpbGwtb3BhY2l0eT0iMSIvPjxwYXRoIGQ9Ik0zMzk1LTE0MzMgMzQ3MS0xNDMzIDM0NzEtMTE4MCAzMzk1LTExODAgMzM5NS0xNDMzWiIgZmlsbD0iIzNBNDE1QyIgZmlsbC1ydWxlPSJldmVub2RkIiBmaWxsLW9wYWNpdHk9IjEiLz48cGF0aCBkPSJNNDIyLjQ5OC0xNjgxLjE0IDcxMi4yNzUtMTUxMy44NCA3MTIuMjc1LTE1MTMuODMgNzEzLjUxNy0xMTc4LjU0IDU4Ni42ODEtMTI1MS43NyA1ODUuOTgtMTQ0MC45MSA1ODUuOTc5LTE0NDAuOTcgNDIyLjQ5OC0xNTM1LjM1Wk00MjIuMjAzLTE2ODEuMzEgNDIyLjQ5OC0xNjgxLjE0IDQyMi40OTgtMTUzNS4zNSA0MjIuMjQyLTE1MzUuNSAyNTguMDM3LTE0NDEuNTEgMjU4LjAzNy0xNDQxLjUxIDI1Ny45MDItMTQ0MS40MyAyNTguNjAzLTEyNTIuMDcgMjU4Ljc1MS0xMjUxLjk5IDEzMi40OTQtMTE3OS4wOSAxMzIuMzA4LTExNzkuMiAxMzEuMDY1LTE1MTQuNjYgMTMxLjIwMS0xNTE0Ljc0IDEzMS4yMDEtMTUxNC43NFoiIGZpbGw9IiNEMUE0MTkiIGZpbGwtcnVsZT0iZXZlbm9kZCIgZmlsbC1vcGFjaXR5PSIxIi8+PHBhdGggZD0iTTQyMi4yNDItMTUzNS41IDQyMi40OTgtMTUzNS4zNSA0MjIuNDk4LTE1MzUuMzUgNTg1Ljk3OS0xNDQwLjk3IDU4NS45OC0xNDQwLjkxIDQyMi41MjQtMTM0Ni41NCA0MjIuNDk4LTEzNDYuNTYgNDIyLjQ5OC0xMzQ2LjU2IDI1OC4wMzctMTQ0MS41MVoiIGZpbGw9IiNEREMyRkYiIGZpbGwtcnVsZT0iZXZlbm9kZCIgZmlsbC1vcGFjaXR5PSIxIi8+PHBhdGggZD0iTTU4NS45OC0xNDQwLjkxIDU4Ni42OC0xMjUxLjc3IDU4Ni42OC0xMjUxLjc3IDU4Ni42ODEtMTI1MS42MSA0MjIuNDk4LTExNTcuNjMgNDIyLjQ5OC0xMzQ2LjUzIDQyMi41MjQtMTM0Ni41NCA0MjIuNTI0LTEzNDYuNTRaTTI1OC4wMzctMTQ0MS41MSA0MjIuNDk4LTEzNDYuNTYgNDIyLjQ5OC0xMzQ2LjUzIDQyMi40OTgtMTM0Ni41MyA0MjIuNDk4LTExNTcuNjMgNDIyLjM0MS0xMTU3LjU0IDI1OC43NTEtMTI1MS45OSAyNTguNzUxLTEyNTEuOTkgMjU4LjYwMy0xMjUyLjA3IDI1Ny45MDItMTQ0MS40M1oiIGZpbGw9IiM4RjZDQzIiIGZpbGwtcnVsZT0iZXZlbm9kZCIgZmlsbC1vcGFjaXR5PSIxIi8+PHBhdGggZD0iTTU4Ni42OC0xMjUxLjc3IDcxMy41MTctMTE3OC41NCA3MTMuNTE4LTExNzguMzggNDIyLjQ5OC0xMDExLjggNDIyLjQ5OC0xMTU3LjYzIDU4Ni42ODEtMTI1MS42MVpNMjU4Ljc1MS0xMjUxLjk5IDQyMi4zNDEtMTE1Ny41NCA0MjIuNDk4LTExNTcuNjMgNDIyLjQ5OC0xMDExLjggNDIyLjM4LTEwMTEuNzMgMTMyLjQ5NC0xMTc5LjA5WiIgZmlsbD0iI0YzREI2NyIgZmlsbC1ydWxlPSJldmVub2RkIiBmaWxsLW9wYWNpdHk9IjEiLz48L2c+PC9nPjwvc3ZnPg==" alt="Prime Radiant" class="h-10 sm:h-12" />
+<body>
+  <div class="wrap">
+    <header>
+      <div class="branding">
+        <img src="prime-radiant-logo-inverse.svg" alt="Prime Radiant Logo" />
+      </div>
+      <h1>2025 Cybercrime Cost Counter</h1>
+      <div class="badge" id="asof">Initializing…</div>
     </header>
 
-    <!-- Progress -->
-    <section class="brand-card rounded-2xl border bg-white p-4 sm:p-6">
-      <div class="flex items-center justify-between gap-3">
-        <div>
-          <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight">Personal Value Calculator</h1>
-          <p id="step-subtitle" class="muted mt-1 text-sm sm:text-base">Answer a few questions to get your score.</p>
-        </div>
-        <button id="btn-reset" class="hidden sm:inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition border bg-white hover:bg-slate-50">
-          <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Reset
-        </button>
-      </div>
+    <section class="panel counter" aria-live="polite">
+      <div id="amount" class="big" aria-label="Estimated 2025 cybercrime cost so far">$0</div>
+      <div class="subtitle">of <strong>$10.5 trillion</strong> projected for all of 2025</div>
 
-      <div class="mt-4">
-        <div class="h-3 w-full rounded-full bg-slate-200">
-          <div id="progress-bar" class="h-3 rounded-full brand-primary transition-all" style="width:0%"></div>
-        </div>
-        <div class="mt-2 text-xs muted">
-          <span id="progress-text">Step 1 of —</span>
-        </div>
+      <div class="progress" aria-hidden="true"><div id="bar" class="bar"></div></div>
+      <div class="row">
+        <div class="chip">Year progress: <span id="pct">0%</span></div>
+        <div class="chip">Per second: <span id="rate">$0</span></div>
       </div>
     </section>
 
-    <!-- Wizard Card -->
-    <section id="wizard-card" class="brand-card rounded-2xl border bg-white p-4 sm:p-6">
-      <!-- Content injected by JS -->
-    </section>
-
-    <!-- Results -->
-    <section id="results-card" class="brand-card rounded-2xl border bg-white p-4 sm:p-6 hidden">
-      <div class="flex items-center justify-between gap-4">
-        <div>
-          <div class="text-sm font-medium muted">Your Score</div>
-          <div id="score-total" class="text-4xl font-bold leading-none">—</div>
-          <div id="score-sub" class="text-sm muted">Overall adversarial value</div>
-        </div>
-        <div class="text-right">
-          <span id="tier-badge" class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border badge">Value Tier</span>
-          <div class="mt-2 text-sm"><span class="font-medium">Adversary View:</span> <span id="adversary-view" class="muted">—</span></div>
-        </div>
-      </div>
-      <div class="mt-4">
-        <div class="h-3 w-full rounded-full bg-slate-200">
-          <div id="score-progress" class="h-3 rounded-full brand-primary transition-all" style="width:0%"></div>
-        </div>
-      </div>
-      <div id="attack-badges" class="mt-4 flex flex-wrap gap-2"></div>
-
-      <div class="mt-6">
-        <h3 class="text-base font-semibold">Why you rated this way</h3>
-        <div id="why-grid" class="mt-2 grid gap-3 sm:grid-cols-2"></div>
-      </div>
-
-      <div class="mt-6">
-        <h3 class="text-base font-semibold">Exposure Check Insights</h3>
-        <div id="exposure-insights" class="mt-2 space-y-2"></div>
-      </div>
-
-      <div class="mt-6 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
-        <div class="muted text-sm">Use these insights to prioritize your defenses.</div>
-        <div class="flex gap-2">
-          <button id="btn-print" class="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition border bg-white hover:bg-slate-50">
-            <i data-lucide="copy" class="w-4 h-4"></i> Print / Save PDF
-          </button>
-          <button id="btn-edit" class="inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition brand-primary">
-            <i data-lucide="edit-3" class="w-4 h-4"></i> Edit Answers
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <footer class="text-center text-xs muted py-6">
-      © Prime Radiant — Awareness tool; not a guarantee of risk.
+    <footer>
+      <p>Counter is linear across the 2025 calendar year and updates in real time. Timings use <abbr title="Coordinated Universal Time">UTC</abbr> to avoid time‑zone & DST drift.</p>
     </footer>
+
+    <div class="toasts" id="toasts" aria-live="polite" aria-atomic="true"></div>
+    <div class="controls">
+      <span>Pop‑ups</span>
+      <div id="toggle" class="switch on" role="switch" aria-checked="true" tabindex="0"></div>
+    </div>
   </div>
 
-<script>
-// ---- Data (same scoring model) ----
-const CATEGORIES = [
-  { key: "publicProfile", title: "Public Profile", description: "Social media followers (largest platform)",
-    options: [
-      { label: "< 10,000", value: "lt10k", why: "Lower visibility reduces opportunistic phishing and impersonation attempts." },
-      { label: "10,000 – 49,999", value: "10k-49k", why: "Growing audience increases visibility to scammers and clout-based scams." },
-      { label: "50,000 – 99,999", value: "50k-99k", why: "High public footprint raises likelihood of targeted outreach and fake sponsorships." },
-      { label: "100,000 – 499,999", value: "100k-499k", why: "Large audience creates ROI for tailored phishing and account takeovers." },
-      { label: "500,000 – 999,999", value: "500k-999k", why: "Very high reach attracts persistent fraud and impersonation rings." },
-      { label: "1,000,000+", value: "1m+", why: "Massive audience makes you a strategic target for monetizable compromise." },
-    ],
-    max: 20
-  },
-  { key: "influenceReach", title: "Influence Reach", description: "Decision-making power and public voice",
-    options: [
-      { label: "No leadership or advocacy role", value: "none", why: "Limited leverage for adversaries to exploit for influence." },
-      { label: "Leads a small local group (under 100)", value: "lead<100", why: "Some authority can be abused via impersonation to extract favors." },
-      { label: "Manages a team/org (100–999)", value: "100-999", why: "Authority over budgets/people enables business email compromise attempts." },
-      { label: "Direct influence over 1,000–9,999", value: "1k-9k", why: "Broader influence increases payout for attackers who control your channels." },
-      { label: "Influence over 10,000+ or sway in large orgs", value: "10k+", why: "High-impact decisions make you a high-ROI mark for targeted ops." },
-    ],
-    max: 15
-  },
-  { key: "financialLeverage", title: "Financial Leverage", description: "Direct access to funds/assets",
-    options: [
-      { label: "Personal funds only, <$50,000 liquid", value: "<50k", why: "Lower immediate payoff limits attacker interest." },
-      { label: "Personal $50,000–$249,999 liquid", value: "50k-249k", why: "Higher capacity invites banking-targeted phishing." },
-      { label: "Controls or manages <$1M in org/project funds", value: "<1m", why: "Access to business funds attracts invoice fraud and BEC." },
-      { label: "Controls $1M–$10M", value: "1m-10m", why: "Substantial funds justify tailored social engineering campaigns." },
-      { label: "Controls $10M+", value: ">10m", why: "Large managed assets signal prime monetization potential." },
-    ],
-    max: 20
-  },
-  { key: "techAssets", title: "Technical/Physical Assets", description: "Access to high-value equipment or systems",
-    options: [
-      { label: "No specialized equipment", value: "none", why: "Lower incentive to compromise hardware or specialized systems." },
-      { label: "High-end consumer devices only", value: "consumer", why: "Common devices are targeted for resale or cryptojacking." },
-      { label: "Access to specialized tools (industrial/research)", value: "specialized", why: "Specialized tools may hold proprietary data or control." },
-      { label: "Access to SCADA/ICS or OT in critical infra", value: "ics-access", why: "Operational tech access drives targeted intrusion attempts." },
-      { label: "Sole control over SCADA/ICS in high-value envs", value: "ics-control", why: "Exclusive control makes you a strategic pivot to critical systems." },
-    ],
-    max: 20
-  },
-  { key: "networkValue", title: "Network Value", description: "Access to high-value people or organizations",
-    options: [
-      { label: "No significant connections", value: "none", why: "Limited lateral-movement value to attackers." },
-      { label: "Know several mid-level professionals", value: "mid-pros", why: "Connections can be leveraged for social engineering." },
-      { label: "Direct connection to execs/public figures/specialists", value: "execs", why: "High-value contacts raise payoff for account compromise." },
-      { label: "Trusted ties to multiple high-value individuals", value: "multi-high", why: "Web of trust amplifies impact of impersonation and BEC." },
-    ],
-    max: 15
-  },
-  { key: "operationalCriticality", title: "Operational Criticality", description: "How vital you are to an operation or organization",
-    options: [
-      { label: "Easily replaced / non-critical", value: "non-critical", why: "Limited disruption value minimizes targeting persistence." },
-      { label: "Some specialized skills", value: "some", why: "Skills attract targeted phishing to steal access." },
-      { label: "One of a few with essential skills/access", value: "few", why: "Compromising you disrupts operations and eases lateral movement." },
-      { label: "Sole person for certain tasks/decisions", value: "sole", why: "Single point of failure incentivizes sustained targeting." },
-    ],
-    max: 10
-  },
-];
+  <script>
+  (function(){
+    // ===== Counter core =====
+    const YEAR_TOTAL = 10_500_000_000_000; // $10.5T
+    const START_MS = Date.UTC(2025,0,1,0,0,0,0);
+    const END_MS   = Date.UTC(2026,0,1,0,0,0,0);
+    const DURATION_MS = END_MS - START_MS;
+    const RATE_PER_MS = YEAR_TOTAL / DURATION_MS; // dollars per ms
 
-const POINTS = {
-  publicProfile: { "lt10k": 0, "10k-49k": 4, "50k-99k": 8, "100k-499k": 12, "500k-999k": 16, "1m+": 20 },
-  influenceReach: { "none": 0, "lead<100": 3, "100-999": 6, "1k-9k": 10, "10k+": 15 },
-  financialLeverage: { "<50k": 0, "50k-249k": 5, "<1m": 10, "1m-10m": 15, ">10m": 20 },
-  techAssets: { "none": 0, "consumer": 5, "specialized": 10, "ics-access": 15, "ics-control": 20 },
-  networkValue: { "none": 0, "mid-pros": 5, "execs": 10, "multi-high": 15 },
-  operationalCriticality: { "non-critical": 0, "some": 3, "few": 6, "sole": 10 }
-};
+    const amountEl = document.getElementById('amount');
+    const pctEl    = document.getElementById('pct');
+    const rateEl   = document.getElementById('rate');
+    const barEl    = document.getElementById('bar');
+    const asofEl   = document.getElementById('asof');
 
-const TIER_MAP = [
-  { range: [0, 25],  name: "Low Value",    view: "Opportunistic target; minimal ROI for tailored attack.",
-    attacks: ["Mass phishing","Credential stuffing from breached lists","Malvertising","Low-level malware / adware"] },
-  { range: [26, 50], name: "Moderate",     view: "Worth targeting if attack surface is low-cost to exploit.",
-    attacks: ["Phishing & light spear phishing","BEC attempts","Cryptojacking","Account takeovers for resale"] },
-  { range: [51, 75], name: "High Value",   view: "Clear ROI for targeted campaigns; possible persistent interest.",
-    attacks: ["Tailored spear phishing","Ransomware targeting","Social engineering via networks","Supply-chain compromise"] },
-  { range: [76,100], name: "Prime Target", view: "Strategic asset; high likelihood of sustained, multi-vector attacks.",
-    attacks: ["APT-style operations","Multi-stage ransomware","ICS/SCADA exploitation","Reputational attacks"] }
-];
+    const fmtUSD0 = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+    const fmtPct  = new Intl.NumberFormat('en-US', { style: 'percent', maximumFractionDigits: 2 });
+    const fmtTime = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'medium' });
 
-// Exposure (non-scoring) questions
-const EXPOSURE = [
-  { key: "mfa", title: "Multi-Factor Authentication", type: "single",
-    description: "Do you use MFA on your important accounts (email, bank, socials)? [Doesn't affect score]",
-    options: [ ["always","Always / on all important accounts"], ["some","On some accounts"], ["never","No"] ]
-  },
-  { key: "pmgr", title: "Password Manager", type: "single",
-    description: "Do you use a password manager with unique passwords? [Doesn't affect score]",
-    options: [ ["yes","Yes"], ["working","Not yet, planning to"], ["no","No"] ]
-  },
-  { key: "updates", title: "Update Hygiene", type: "single",
-    description: "How quickly do you update devices/apps? [Doesn't affect score]",
-    options: [ ["fast","Within a week"], ["normal","Within a month"], ["slow","Rarely / only when forced"] ]
-  },
-  { key: "wifi", title: "Public Wi-Fi", type: "single",
-    description: "How often do you use public Wi-Fi without a trusted VPN? [Doesn't affect score]",
-    options: [ ["rare","Rarely/Never"], ["sometimes","Sometimes"], ["often","Often"] ]
-  },
-  { key: "travel", title: "Travel Frequency", type: "single",
-    description: "Do you travel frequently (airports/hotels/conferences)? [Doesn't affect score]",
-    options: [ ["low","Low"], ["medium","Medium"], ["high","High"] ]
-  },
-  { key: "home", title: "Home Network", type: "single",
-    description: "How would you rate your home network security? [Doesn't affect score]",
-    options: [ ["hardened","Segmented + monitored"], ["ok","Basic router defaults changed"], ["weak","Default settings / unknown"] ]
-  },
-  { key: "datatype", title: "Data Sensitivity", type: "single",
-    description: "Do you handle sensitive personal, health, financial, IP, or client data? [Doesn't affect score]",
-    options: [ ["none","No"], ["some","Some"], ["high","Yes, regularly"] ]
-  },
-  { key: "breach", title: "Past Breaches", type: "single",
-    description: "Have you been in a known data breach (email on HaveIBeenPwned, etc.)? [Doesn't affect score]",
-    options: [ ["unknown","Not sure"], ["yes","Yes"], ["no","No"] ]
-  }
-];
+    function clamp01(x){ return Math.min(1, Math.max(0, x)); }
+    function progressNow(){ return clamp01((Date.now() - START_MS) / DURATION_MS); }
 
-const MAX_TOTAL = 100;
+    let currentAmount = Math.round(YEAR_TOTAL * progressNow());
+    rateEl.textContent = fmtUSD0.format(Math.round(RATE_PER_MS * 1000));
 
-// --------- State ---------
-let steps = []; // [{type:'value'|'exposure', key, title, description, options, whyFromValue?}]
-let current = 0;
-const selections = {};   // scoring
-const exposureSel = {};  // non-scoring
-
-function buildSteps() {
-  steps = [];
-  CATEGORIES.forEach(cat => {
-    steps.push({
-      type: "value",
-      key: cat.key,
-      title: cat.title,
-      description: cat.description,
-      options: cat.options
-    });
-  });
-  EXPOSURE.forEach(q => {
-    steps.push({
-      type: "exposure",
-      key: q.key,
-      title: q.title,
-      description: q.description,
-      options: q.options.map(([value, label]) => ({ value, label, why: null }))
-    });
-  });
-}
-
-function $(sel){ return document.querySelector(sel); }
-function el(tag, attrs={}, children=[]) {
-  const e = document.createElement(tag);
-  Object.entries(attrs).forEach(([k,v]) => {
-    if (k === "className") e.className = v;
-    else if (k === "html") e.innerHTML = v;
-    else e.setAttribute(k, v);
-  });
-  (Array.isArray(children) ? children : [children]).filter(Boolean).forEach(c => e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c));
-  return e;
-}
-
-function exposureAdvice(key, val) {
-  const map = {
-    mfa: {
-      always: "Excellent—MFA stops most account-takeover attempts.",
-      some: "Turn on MFA for email, bank, and social media to block easy takeovers.",
-      never: "Enable MFA on critical accounts immediately to prevent simple compromises."
-    },
-    pmgr: {
-      yes: "Great—unique passwords reduce cascade failures across accounts.",
-      working: "Adopt a password manager soon; it meaningfully cuts risk.",
-      no: "Reused passwords are a top breach cause—move to a manager with MFA."
-    },
-    updates: {
-      fast: "Strong hygiene—closing known vulnerabilities promptly.",
-      normal: "Consider enabling auto-updates to shrink exposure windows.",
-      slow: "Delayed patching leaves doors open—enable auto-updates."
-    },
-    wifi: {
-      rare: "Good—limit untrusted Wi-Fi or use a trusted VPN.",
-      sometimes: "Use a trusted VPN on public Wi-Fi to prevent interception.",
-      often: "Frequent public Wi-Fi use without VPN invites credential/session theft."
-    },
-    travel: {
-      low: "Lower chance of device/credential exposure while in transit.",
-      medium: "Travel adds exposure—use privacy screens and disable auto-join Wi-Fi.",
-      high: "Frequent travel—assume hostile networks and use a dedicated travel device if possible."
-    },
-    home: {
-      hardened: "Excellent—segmentation/monitoring limits blast radius.",
-      ok: "Improve by changing default admin creds and isolating IoT devices.",
-      weak: "Default settings are risky—change admin creds and disable remote mgmt."
-    },
-    datatype: {
-      none: "Lower payoff for data theft.",
-      some: "Handle with care—encrypt storage and use least-privilege sharing.",
-      high: "High-sensitivity data—apply DLP, encryption at rest, and strict access control."
-    },
-    breach: {
-      no: "Good—still monitor with a breach alerting service.",
-      unknown: "Check HaveIBeenPwned and enable breach alerts for your emails.",
-      yes: "Change reused passwords, enable MFA everywhere, and rotate secrets where possible."
+    function update(){
+      const nowP = progressNow();
+      currentAmount = Math.min(YEAR_TOTAL, YEAR_TOTAL * nowP);
+      amountEl.textContent = fmtUSD0.format(Math.floor(currentAmount));
+      pctEl.textContent = fmtPct.format(nowP);
+      barEl.style.width = (nowP * 100).toFixed(3) + '%';
+      asofEl.textContent = 'As of ' + fmtTime.format(new Date());
+      requestAnimationFrame(update);
     }
-  };
-  return (map[key] && map[key][val]) || null;
-}
+    requestAnimationFrame(update);
 
-function computeScore() {
-  let total = 0;
-  for (const cat of CATEGORIES) {
-    const v = selections[cat.key];
-    if (v && POINTS[cat.key] && typeof POINTS[cat.key][v] === "number") total += POINTS[cat.key][v];
-  }
-  return total;
-}
+    // ===== Pop‑ups =====
+    const firsts = ["Alex","Jordan","Taylor","Casey","Riley","Morgan","Sam","Avery","Jamie","Quinn","Drew","Cameron","Shay","Trey","Parker","Dakota"];
+    const lasts  = ["Nguyen","Patel","Smith","Johnson","Brown","Garcia","Martinez","Kim","Davis","Lopez","Miller","Wilson","Anderson","Thomas","Hernandez","Walker"];
+    const bizAdj = ["Blue","Prime","North","Lone Star","Silver","Atlas","Pioneer","Summit","Apex","Evergreen","Radiant","Nova"];
+    const bizNoun= ["Logistics","Dental","Outfitters","Media","Consulting","Well Services","Studios","Bakery","Builders","Controls","Analytics","Hardware"];
+    const bizSfx = ["LLC","Inc.","Co.","& Sons","Group"];
 
-function tierForScore(score) {
-  return TIER_MAP.find(t => score >= t.range[0] && score <= t.range[1]) || TIER_MAP[0];
-}
+    function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+    function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+    function person(){ return `${pick(firsts)} ${pick(lasts)}`; }
+    function business(){ return `${pick(bizAdj)} ${pick(bizNoun)} ${pick(bizSfx)}`; }
 
-// --------- Rendering ---------
-function updateProgress() {
-  const progress = (current / steps.length) * 100;
-  $("#progress-bar").style.width = Math.max(2, Math.min(100, Math.round(progress))) + "%";
-  $("#progress-text").textContent = "Step " + Math.min(current + 1, steps.length) + " of " + steps.length;
-}
+    const templates = [
+      {subject:'person',   label:'was just phished for',                 range:[100,500],   tone:'warn'},
+      {subject:'person',   label:'was hit with ransomware for',          range:[1000,10000],tone:'bad'},
+      {subject:'business', label:'fell for a BEC scam costing',          range:[5000,75000],tone:'bad'},
+      {subject:'business', label:'paid a fake invoice of',               range:[2000,15000],tone:'warn'},
+      {subject:'business', label:'is recovering from downtime losses of',range:[10000,125000],tone:'bad'}
+    ];
 
-function renderStep() {
-  $("#results-card").classList.add("hidden");
-  $("#wizard-card").classList.remove("hidden");
-  const s = steps[current];
-  const card = $("#wizard-card");
-  card.innerHTML = "";
+    const toastsEl = document.getElementById('toasts');
+    const toggleEl = document.getElementById('toggle');
+    let popupsOn = true;
 
-  const header = el("div", { className: "pb-2" }, [
-    el("div", { className: "flex items-center gap-2" }, [
-      el("h2", { className: "text-lg sm:text-xl font-semibold" }, s.title),
-      el("span", { className: "text-xs badge rounded-full px-2 py-0.5" }, s.type === "value" ? "Scoring" : "Doesn't affect score")
-    ]),
-    el("p", { className: "muted text-sm -mt-1" }, s.description)
-  ]);
-
-  const fieldset = el("fieldset", { className: "space-y-2 touch-target mt-3" });
-  (s.options || []).forEach(opt => {
-    const id = s.key + "-" + opt.value;
-    const lbl = el("label", { for: id, className: "flex items-start gap-3 rounded-xl border p-3 cursor-pointer transition hover:bg-slate-50" });
-    const input = el("input", { id, type: "radio", name: s.key, class: "mt-1" });
-    const saved = (s.type === "value" ? selections[s.key] : exposureSel[s.key]);
-    if (saved === opt.value) input.checked = true;
-    const wrap = el("div", { className: "flex-1" }, [
-      el("div", { className: "font-medium leading-tight" }, opt.label),
-      opt.why ? el("div", { className: "text-xs muted" }, opt.why) : null
-    ]);
-    lbl.append(input, wrap);
-    fieldset.appendChild(lbl);
-  });
-
-  const nav = el("div", { className: "mt-4 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between" }, [
-    el("button", { id: "btn-back", className: "inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition border bg-white hover:bg-slate-50" }, [
-      el("i", { "data-lucide": "arrow-left", className: "w-4 h-4" }),
-      "Back"
-    ]),
-    el("div", { className: "flex gap-2" }, [
-      el("button", { id: "btn-skip", className: "inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition border bg-white hover:bg-slate-50" }, "Skip"),
-      el("button", { id: "btn-next", className: "inline-flex items-center gap-2 rounded-2xl px-5 py-2 text-sm font-semibold transition brand-accent" }, [
-        el("i", { "data-lucide": current === steps.length - 1 ? "shield-check" : "arrow-right", className: "w-4 h-4" }),
-        current === steps.length - 1 ? "Calculate My Score" : "Next"
-      ])
-    ])
-  ]);
-
-  card.append(header, fieldset, nav);
-  lucide.createIcons();
-
-  // Click handlers
-  $("#btn-back").addEventListener("click", () => {
-    if (current === 0) return;
-    current -= 1;
-    updateProgress();
-    renderStep();
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  });
-  $("#btn-skip").addEventListener("click", () => {
-    if (current < steps.length - 1) {
-      current += 1; updateProgress(); renderStep();
-    } else {
-      computeAndShowResults();
+    function fmtUSD(n){ return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n); }
+    function makeToast(){
+      if(!popupsOn || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const t = pick(templates);
+      const name = t.subject === 'person' ? person() : business();
+      const amt = fmtUSD(randInt(t.range[0], t.range[1]));
+      const div = document.createElement('div');
+      div.className = `toast ${t.tone}`;
+      div.innerHTML = `
+        <div class="toast-row"><span class="title">${name}</span></div>
+        <div class="meta">${t.label}</div>
+        <div class="amt">${amt}</div>`;
+      toastsEl.prepend(div);
+      const lifespan = randInt(5000, 8500);
+      setTimeout(()=>{ div.style.animation = 'toast-out .35s ease forwards'; div.addEventListener('animationend', ()=> div.remove(), {once:true}); }, lifespan);
     }
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  });
-  $("#btn-next").addEventListener("click", () => {
-    // Save selection for this step if any
-    const selected = card.querySelector("input[type=radio]:checked");
-    if (selected) {
-      const value = selected.id.replace(s.key + "-", "");
-      if (s.type === "value") selections[s.key] = value; else exposureSel[s.key] = value;
-    }
-    if (current < steps.length - 1) {
-      current += 1; updateProgress(); renderStep();
-    } else {
-      computeAndShowResults();
-    }
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  });
+    function schedule(){ setTimeout(()=>{ makeToast(); schedule(); }, randInt(2500, 6000)); }
+    setTimeout(makeToast, 1200); setTimeout(makeToast, 2200); schedule();
 
-  // visually highlight selection
-  card.querySelectorAll("label").forEach(label => {
-    const input = label.querySelector("input[type=radio]");
-    const name = input?.name;
-    const selectedVal = name && (selections[name] || exposureSel[name]);
-    const myVal = input?.id?.replace(name + "-", "");
-    label.classList.toggle("card-selected", selectedVal === myVal);
-    input.addEventListener("change", () => {
-      card.querySelectorAll("label").forEach(l => l.classList.remove("card-selected"));
-      label.classList.add("card-selected");
-    });
-  });
-
-  // Disable Back on first
-  if (current === 0) document.getElementById("btn-back").setAttribute("disabled", "disabled");
-  updateProgress();
-}
-
-function computeAndShowResults() {
-  const total = computeScore();
-  const tier = (function(score){
-    return TIER_MAP.find(t => score >= t.range[0] && score <= t.range[1]) || TIER_MAP[0];
-  })(total);
-  const percent = Math.round((total / MAX_TOTAL) * 100);
-
-  document.getElementById("score-total").textContent = total;
-  document.getElementById("score-sub").textContent = "out of " + MAX_TOTAL + " (" + percent + "%)";
-  document.getElementById("adversary-view").textContent = tier.view;
-  document.getElementById("score-progress").style.width = percent + "%";
-
-  const badge = document.getElementById("tier-badge");
-  badge.textContent = tier.name;
-
-  // why grid
-  const why = document.getElementById("why-grid"); why.innerHTML = "";
-  CATEGORIES.forEach(cat => {
-    const v = selections[cat.key];
-    const opt = cat.options.find(o => o.value === v);
-    const item = el("div", { className: "rounded-xl border p-3" }, [
-      el("div", { className: "text-sm muted" }, cat.title),
-      el("div", { className: "font-medium" }, opt ? opt.label : "—"),
-      el("div", { className: "text-xs muted mt-1" }, opt ? opt.why : "No selection provided.")
-    ]);
-    why.appendChild(item);
-  });
-
-  // attacks
-  const attackWrap = document.getElementById("attack-badges"); attackWrap.innerHTML = "";
-  tier.attacks.forEach(a => attackWrap.appendChild(el("span", { className: "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border badge whitespace-normal text-left" }, a)));
-
-  // exposure insights
-  const insights = document.getElementById("exposure-insights"); insights.innerHTML = "";
-  Object.entries(exposureSel).forEach(([k,v]) => {
-    const a = exposureAdvice(k, v);
-    if (a) insights.appendChild(el("div", { className: "rounded-xl border p-3 text-sm" }, a));
-  });
-
-  // mode
-  document.getElementById("wizard-card").classList.add("hidden");
-  document.getElementById("results-card").classList.remove("hidden");
-
-  // buttons
-  document.getElementById("btn-edit").onclick = () => {
-    document.getElementById("results-card").classList.add("hidden");
-    document.getElementById("wizard-card").classList.remove("hidden");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-  document.getElementById("btn-print").onclick = () => window.print();
-}
-
-function resetAll() {
-  Object.keys(selections).forEach(k => delete selections[k]);
-  Object.keys(exposureSel).forEach(k => delete exposureSel[k]);
-  current = 0;
-  renderStep();
-  updateProgress();
-  document.getElementById("results-card").classList.add("hidden");
-}
-
-function main() {
-  buildSteps();
-  current = 0;
-  renderStep();
-  updateProgress();
-  lucide.createIcons();
-  document.getElementById("btn-reset").addEventListener("click", resetAll);
-}
-
-document.addEventListener("DOMContentLoaded", main);
-</script>
-
+    function togglePopups(){ popupsOn = !popupsOn; toggleEl.classList.toggle('on', popupsOn); toggleEl.setAttribute('aria-checked', String(popupsOn)); }
+    toggleEl.addEventListener('click', togglePopups);
+    toggleEl.addEventListener('keydown', (e)=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); togglePopups(); }});
+  })();
+  </script>
 </body>
 </html>
